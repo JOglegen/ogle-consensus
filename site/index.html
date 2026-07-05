@@ -1,0 +1,489 @@
+<!doctype html>
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>OGLE Consensus Bot</title>
+    <meta
+      name="description"
+      content="A clearer dashboard for the OGLE AI Consensus Bot paper-trading signal system."
+    />
+    <style>
+      :root {
+        color-scheme: light;
+        --ink: #182029;
+        --muted: #5b6472;
+        --line: #d9dee7;
+        --panel: #ffffff;
+        --wash: #f4f7fa;
+        --green: #147d5b;
+        --red: #b93f37;
+        --amber: #b06a1f;
+        --blue: #245f9d;
+        --coal: #101923;
+      }
+
+      * {
+        box-sizing: border-box;
+      }
+
+      body {
+        margin: 0;
+        font-family:
+          Inter, ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+          sans-serif;
+        color: var(--ink);
+        background: var(--wash);
+        letter-spacing: 0;
+      }
+
+      main {
+        min-height: 100vh;
+      }
+
+      .topbar {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 20px;
+        padding: 18px clamp(18px, 4vw, 48px);
+        background: var(--coal);
+        color: #fff;
+        border-bottom: 4px solid #2d9b73;
+      }
+
+      .brand {
+        display: flex;
+        align-items: center;
+        gap: 12px;
+        min-width: 0;
+      }
+
+      .mark {
+        width: 40px;
+        height: 40px;
+        display: grid;
+        place-items: center;
+        border: 1px solid rgba(255, 255, 255, 0.34);
+        background: #1f3142;
+        font-weight: 800;
+      }
+
+      .brand h1 {
+        margin: 0;
+        font-size: 1.15rem;
+        line-height: 1.2;
+      }
+
+      .brand span,
+      .status small {
+        color: #cbd5df;
+        font-size: 0.86rem;
+      }
+
+      .status {
+        display: flex;
+        align-items: center;
+        gap: 10px;
+        white-space: nowrap;
+      }
+
+      .dot {
+        width: 10px;
+        height: 10px;
+        border-radius: 50%;
+        background: #58d39a;
+      }
+
+      .hero {
+        display: grid;
+        grid-template-columns: minmax(0, 1.12fr) minmax(320px, 0.88fr);
+        gap: clamp(22px, 4vw, 42px);
+        align-items: center;
+        padding: clamp(28px, 5vw, 64px) clamp(18px, 4vw, 48px);
+        background: linear-gradient(180deg, #ffffff 0%, #eef3f7 100%);
+      }
+
+      .hero h2 {
+        margin: 0 0 14px;
+        max-width: 880px;
+        font-size: clamp(2rem, 4vw, 4.6rem);
+        line-height: 1.02;
+      }
+
+      .hero p {
+        max-width: 760px;
+        margin: 0;
+        color: var(--muted);
+        font-size: 1.05rem;
+        line-height: 1.6;
+      }
+
+      .signal-board {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        overflow: hidden;
+        box-shadow: 0 18px 42px rgba(16, 25, 35, 0.12);
+      }
+
+      .signal-head {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 12px;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--line);
+      }
+
+      .signal-head strong {
+        font-size: 0.95rem;
+      }
+
+      .pill {
+        padding: 6px 10px;
+        border-radius: 999px;
+        color: #fff;
+        background: var(--amber);
+        font-size: 0.78rem;
+        font-weight: 700;
+      }
+
+      .meter {
+        padding: 20px 18px 22px;
+      }
+
+      .bars {
+        display: grid;
+        gap: 12px;
+      }
+
+      .bar {
+        display: grid;
+        grid-template-columns: 64px 1fr 42px;
+        gap: 12px;
+        align-items: center;
+        font-size: 0.9rem;
+        color: var(--muted);
+      }
+
+      .track {
+        height: 12px;
+        background: #e9edf2;
+        border-radius: 999px;
+        overflow: hidden;
+      }
+
+      .fill {
+        height: 100%;
+      }
+
+      .buy {
+        background: var(--green);
+      }
+
+      .hold {
+        background: var(--amber);
+      }
+
+      .sell {
+        background: var(--red);
+      }
+
+      .section {
+        padding: clamp(28px, 4vw, 50px) clamp(18px, 4vw, 48px);
+      }
+
+      .section h2 {
+        margin: 0 0 18px;
+        font-size: clamp(1.45rem, 2vw, 2.2rem);
+      }
+
+      .grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 16px;
+      }
+
+      .card {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .card h3 {
+        margin: 0 0 8px;
+        font-size: 1rem;
+      }
+
+      .card p,
+      .step p,
+      .term p {
+        margin: 0;
+        color: var(--muted);
+        line-height: 1.52;
+      }
+
+      .flow {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .step {
+        min-height: 152px;
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-top: 5px solid var(--blue);
+        border-radius: 8px;
+        padding: 16px;
+      }
+
+      .step span {
+        color: var(--blue);
+        font-weight: 800;
+        font-size: 0.82rem;
+      }
+
+      .step h3 {
+        margin: 8px 0;
+      }
+
+      .terms {
+        display: grid;
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 12px;
+      }
+
+      .term {
+        display: grid;
+        grid-template-columns: 96px 1fr;
+        gap: 14px;
+        align-items: start;
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 15px;
+      }
+
+      .term strong {
+        color: var(--coal);
+      }
+
+      .automation {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 420px);
+        gap: 18px;
+        align-items: stretch;
+        background: var(--coal);
+        color: #fff;
+      }
+
+      .automation p {
+        color: #cbd5df;
+      }
+
+      .checks {
+        background: rgba(255, 255, 255, 0.08);
+        border: 1px solid rgba(255, 255, 255, 0.16);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .checks ul {
+        margin: 0;
+        padding-left: 20px;
+        color: #e9eef5;
+        line-height: 1.8;
+      }
+
+      footer {
+        padding: 24px clamp(18px, 4vw, 48px);
+        color: var(--muted);
+        background: #fff;
+        border-top: 1px solid var(--line);
+        font-size: 0.9rem;
+      }
+
+      @media (max-width: 860px) {
+        .topbar,
+        .status {
+          align-items: flex-start;
+        }
+
+        .topbar,
+        .hero,
+        .automation {
+          grid-template-columns: 1fr;
+        }
+
+        .topbar {
+          display: grid;
+        }
+
+        .grid,
+        .flow,
+        .terms {
+          grid-template-columns: 1fr;
+        }
+
+        .term {
+          grid-template-columns: 1fr;
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <main>
+      <header class="topbar">
+        <div class="brand">
+          <div class="mark" aria-hidden="true">OC</div>
+          <div>
+            <h1>OGLE Consensus Bot</h1>
+            <span>Paper-trading signal dashboard</span>
+          </div>
+        </div>
+        <div class="status" aria-label="Mode">
+          <span class="dot"></span>
+          <small>Paper mode first. Automation comes after proven results.</small>
+        </div>
+      </header>
+
+      <section class="hero">
+        <div>
+          <h2>Thirteen models vote before a trade idea earns attention.</h2>
+          <p>
+            This layout separates signal strength, action terms, and automation status so it is easier
+            to understand what the bot is suggesting. A BUY or SELL is not a command to trade real
+            money. It is a paper-trading signal to review, log, and test.
+          </p>
+        </div>
+        <aside class="signal-board" aria-label="Sample consensus signal">
+          <div class="signal-head">
+            <strong>Sample Signal: BTC-USD</strong>
+            <span class="pill">Review</span>
+          </div>
+          <div class="meter">
+            <div class="bars">
+              <div class="bar">
+                <span>Buy</span>
+                <div class="track"><div class="fill buy" style="width: 46%"></div></div>
+                <strong>6/13</strong>
+              </div>
+              <div class="bar">
+                <span>Hold</span>
+                <div class="track"><div class="fill hold" style="width: 31%"></div></div>
+                <strong>4/13</strong>
+              </div>
+              <div class="bar">
+                <span>Sell</span>
+                <div class="track"><div class="fill sell" style="width: 23%"></div></div>
+                <strong>3/13</strong>
+              </div>
+            </div>
+          </div>
+        </aside>
+      </section>
+
+      <section class="section">
+        <h2>What To Do With A Signal</h2>
+        <div class="flow">
+          <div class="step">
+            <span>01</span>
+            <h3>Scan</h3>
+            <p>The bot loads market bars, then each model votes buy, sell, or hold.</p>
+          </div>
+          <div class="step">
+            <span>02</span>
+            <h3>Require Consensus</h3>
+            <p>A signal only appears when the configured vote threshold is reached.</p>
+          </div>
+          <div class="step">
+            <span>03</span>
+            <h3>Paper Trade</h3>
+            <p>Use the signal in a simulated account while logging every outcome.</p>
+          </div>
+          <div class="step">
+            <span>04</span>
+            <h3>Review Results</h3>
+            <p>Automation should wait until backtests and live paper results are consistent.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Buy, Sell, Or Hold</h2>
+        <div class="grid">
+          <article class="card">
+            <h3>Buy Signal</h3>
+            <p>
+              Enough models agree that price strength, trend, momentum, or mean reversion support a
+              long paper-trade idea.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Sell Signal</h3>
+            <p>
+              Enough models agree risk is rising or downside pressure is stronger than upside
+              evidence.
+            </p>
+          </article>
+          <article class="card">
+            <h3>Hold Signal</h3>
+            <p>
+              There is no strong agreement. The cleanest action is usually to wait instead of forcing
+              a trade.
+            </p>
+          </article>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Terms In Plain English</h2>
+        <div class="terms">
+          <div class="term">
+            <strong>Consensus</strong>
+            <p>How many independent models agree before the bot treats a signal as meaningful.</p>
+          </div>
+          <div class="term">
+            <strong>Threshold</strong>
+            <p>The minimum votes required. Higher thresholds mean fewer, stricter signals.</p>
+          </div>
+          <div class="term">
+            <strong>Confidence</strong>
+            <p>A signal-quality estimate based on how strongly the vote leans in one direction.</p>
+          </div>
+          <div class="term">
+            <strong>Kelly Size</strong>
+            <p>A suggested paper position size. It is a risk guide, not permission to use real money.</p>
+          </div>
+        </div>
+      </section>
+
+      <section class="section automation">
+        <div>
+          <h2>Will This Be Automated?</h2>
+          <p>
+            The current project is designed to produce and log signals first. Fully automated trading
+            should come later, after the bot has enough paper-trading history to prove the rules are
+            stable. Until then, the dashboard should help you decide what to watch, not silently place
+            trades.
+          </p>
+        </div>
+        <div class="checks">
+          <ul>
+            <li>Paper trading: ready for testing</li>
+            <li>Signal logging: built into the bot</li>
+            <li>Broker automation: wait for proven results</li>
+            <li>Real money: not recommended yet</li>
+          </ul>
+        </div>
+      </section>
+    </main>
+    <footer>
+      OGLE Consensus Bot is informational software for paper trading and research. It is not
+      financial advice.
+    </footer>
+  </body>
+</html>
