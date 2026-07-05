@@ -8,5 +8,6 @@ const dist = join(root, "dist");
 await rm(dist, { recursive: true, force: true });
 await mkdir(dist, { recursive: true });
 await copyFile(join(root, "site", "index.html"), join(dist, "index.html"));
+await copyFile(join(root, "site", "app.js"), join(dist, "app.js"));
 
 console.log("Built static site to dist/");

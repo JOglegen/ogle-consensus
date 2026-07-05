@@ -149,6 +149,18 @@
         font-weight: 700;
       }
 
+      .pill.buy {
+        background: var(--green);
+      }
+
+      .pill.sell {
+        background: var(--red);
+      }
+
+      .pill.hold {
+        background: var(--amber);
+      }
+
       .meter {
         padding: 20px 18px 22px;
       }
@@ -203,6 +215,179 @@
         display: grid;
         grid-template-columns: repeat(3, minmax(0, 1fr));
         gap: 16px;
+      }
+
+      .workspace {
+        display: grid;
+        grid-template-columns: minmax(280px, 380px) minmax(0, 1fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .control-panel,
+      .trade-panel,
+      .log-panel {
+        background: var(--panel);
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .field {
+        display: grid;
+        gap: 6px;
+        margin-bottom: 14px;
+      }
+
+      label {
+        font-size: 0.82rem;
+        font-weight: 800;
+        color: var(--coal);
+      }
+
+      input,
+      select,
+      button {
+        min-height: 42px;
+        border-radius: 6px;
+        font: inherit;
+      }
+
+      input,
+      select {
+        width: 100%;
+        border: 1px solid var(--line);
+        padding: 9px 10px;
+        color: var(--ink);
+        background: #fff;
+      }
+
+      button {
+        border: 0;
+        padding: 0 14px;
+        font-weight: 800;
+        cursor: pointer;
+        color: #fff;
+        background: var(--blue);
+      }
+
+      button.secondary {
+        color: var(--coal);
+        background: #e8edf3;
+      }
+
+      button.danger {
+        background: var(--red);
+      }
+
+      .button-row {
+        display: flex;
+        flex-wrap: wrap;
+        gap: 10px;
+      }
+
+      .signal-layout {
+        display: grid;
+        grid-template-columns: minmax(0, 1fr) minmax(260px, 360px);
+        gap: 16px;
+      }
+
+      .stat-grid {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 10px;
+        margin-top: 16px;
+      }
+
+      .stat {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: #fafcff;
+      }
+
+      .stat span {
+        display: block;
+        color: var(--muted);
+        font-size: 0.78rem;
+        margin-bottom: 6px;
+      }
+
+      .stat strong {
+        font-size: 1.1rem;
+      }
+
+      .model-list {
+        display: grid;
+        gap: 8px;
+        margin-top: 16px;
+      }
+
+      .model-row {
+        display: grid;
+        grid-template-columns: minmax(130px, 1fr) 78px;
+        gap: 10px;
+        align-items: center;
+        padding: 9px 10px;
+        border: 1px solid var(--line);
+        border-radius: 6px;
+        background: #fff;
+      }
+
+      .vote {
+        text-align: center;
+        border-radius: 999px;
+        padding: 4px 8px;
+        color: #fff;
+        font-size: 0.75rem;
+        font-weight: 800;
+      }
+
+      .vote.buy {
+        background: var(--green);
+      }
+
+      .vote.sell {
+        background: var(--red);
+      }
+
+      .vote.hold {
+        background: var(--amber);
+      }
+
+      .table-wrap {
+        overflow-x: auto;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+      }
+
+      table {
+        width: 100%;
+        border-collapse: collapse;
+        min-width: 720px;
+        background: #fff;
+      }
+
+      th,
+      td {
+        text-align: left;
+        padding: 10px 12px;
+        border-bottom: 1px solid var(--line);
+        font-size: 0.88rem;
+      }
+
+      th {
+        color: var(--coal);
+        background: #f0f4f8;
+      }
+
+      tr:last-child td {
+        border-bottom: 0;
+      }
+
+      .empty {
+        color: var(--muted);
+        padding: 14px 0 0;
       }
 
       .card {
@@ -314,7 +499,9 @@
 
         .topbar,
         .hero,
-        .automation {
+        .automation,
+        .workspace,
+        .signal-layout {
           grid-template-columns: 1fr;
         }
 
@@ -323,6 +510,7 @@
         }
 
         .grid,
+        .stat-grid,
         .flow,
         .terms {
           grid-template-columns: 1fr;
@@ -352,38 +540,129 @@
 
       <section class="hero">
         <div>
-          <h2>Thirteen models vote before a trade idea earns attention.</h2>
+          <h2>Scan, review, and log paper trades from one dashboard.</h2>
           <p>
-            This layout separates signal strength, action terms, and automation status so it is easier
-            to understand what the bot is suggesting. A BUY or SELL is not a command to trade real
-            money. It is a paper-trading signal to review, log, and test.
+            Enter a symbol, run a consensus scan, review all 13 model votes, then log a paper trade.
+            This web version is intentionally paper-only, but it now behaves like a working trade
+            review station instead of a static brochure.
           </p>
         </div>
         <aside class="signal-board" aria-label="Sample consensus signal">
           <div class="signal-head">
-            <strong>Sample Signal: BTC-USD</strong>
-            <span class="pill">Review</span>
+            <strong id="hero-symbol">BTC-USD</strong>
+            <span class="pill hold" id="hero-action">Ready</span>
           </div>
           <div class="meter">
             <div class="bars">
               <div class="bar">
                 <span>Buy</span>
-                <div class="track"><div class="fill buy" style="width: 46%"></div></div>
-                <strong>6/13</strong>
+                <div class="track"><div class="fill buy" id="hero-buy-bar" style="width: 46%"></div></div>
+                <strong id="hero-buy">6/13</strong>
               </div>
               <div class="bar">
                 <span>Hold</span>
-                <div class="track"><div class="fill hold" style="width: 31%"></div></div>
-                <strong>4/13</strong>
+                <div class="track"><div class="fill hold" id="hero-hold-bar" style="width: 31%"></div></div>
+                <strong id="hero-hold">4/13</strong>
               </div>
               <div class="bar">
                 <span>Sell</span>
-                <div class="track"><div class="fill sell" style="width: 23%"></div></div>
-                <strong>3/13</strong>
+                <div class="track"><div class="fill sell" id="hero-sell-bar" style="width: 23%"></div></div>
+                <strong id="hero-sell">3/13</strong>
               </div>
             </div>
           </div>
         </aside>
+      </section>
+
+      <section class="section">
+        <h2>Paper Trading Console</h2>
+        <div class="workspace">
+          <form class="control-panel" id="scan-form">
+            <div class="field">
+              <label for="symbol">Symbol</label>
+              <input id="symbol" name="symbol" value="BTC-USD" autocomplete="off" />
+            </div>
+            <div class="field">
+              <label for="threshold">Consensus threshold</label>
+              <select id="threshold" name="threshold">
+                <option value="5">5 votes - active</option>
+                <option value="6" selected>6 votes - balanced</option>
+                <option value="7">7 votes - stricter</option>
+                <option value="8">8 votes - highest quality</option>
+              </select>
+            </div>
+            <div class="field">
+              <label for="account">Paper account value</label>
+              <input id="account" name="account" type="number" min="100" step="50" value="1000" />
+            </div>
+            <div class="button-row">
+              <button type="submit">Run Scan</button>
+              <button class="secondary" type="button" id="reset-demo">Reset</button>
+            </div>
+          </form>
+
+          <div class="trade-panel">
+            <div class="signal-layout">
+              <div>
+                <div class="signal-head">
+                  <strong id="signal-title">No scan yet</strong>
+                  <span class="pill hold" id="signal-action">Waiting</span>
+                </div>
+                <div class="stat-grid">
+                  <div class="stat">
+                    <span>Paper price</span>
+                    <strong id="price">$--</strong>
+                  </div>
+                  <div class="stat">
+                    <span>Confidence</span>
+                    <strong id="confidence">--</strong>
+                  </div>
+                  <div class="stat">
+                    <span>Suggested size</span>
+                    <strong id="size">$--</strong>
+                  </div>
+                </div>
+                <div class="model-list" id="model-list"></div>
+              </div>
+              <div>
+                <h3>Trade Ticket</h3>
+                <p id="ticket-copy">
+                  Run a scan first. BUY and SELL tickets can be logged as paper trades only.
+                </p>
+                <div class="button-row" style="margin-top: 14px">
+                  <button type="button" id="log-trade">Log Paper Trade</button>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Paper Trade Log</h2>
+        <div class="log-panel">
+          <div class="button-row" style="margin-bottom: 12px">
+            <button class="secondary" type="button" id="export-log">Export CSV</button>
+            <button class="danger" type="button" id="clear-log">Clear Log</button>
+          </div>
+          <div class="table-wrap">
+            <table>
+              <thead>
+                <tr>
+                  <th>Time</th>
+                  <th>Symbol</th>
+                  <th>Action</th>
+                  <th>Votes</th>
+                  <th>Price</th>
+                  <th>Size</th>
+                  <th>Confidence</th>
+                </tr>
+              </thead>
+              <tbody id="trade-log"></tbody>
+            </table>
+          </div>
+          <p class="empty" id="empty-log">No paper trades logged yet.</p>
+        </div>
       </section>
 
       <section class="section">
@@ -485,5 +764,6 @@
       OGLE Consensus Bot is informational software for paper trading and research. It is not
       financial advice.
     </footer>
+    <script src="app.js"></script>
   </body>
 </html>
