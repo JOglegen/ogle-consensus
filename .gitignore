@@ -3,3 +3,7 @@ __pycache__/
 signals.csv
 backtest_results.csv
 .env
+
+# Local Netlify folder
+.netlify
+dist/
