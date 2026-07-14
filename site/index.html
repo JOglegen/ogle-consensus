@@ -361,6 +361,94 @@
         border-radius: 8px;
       }
 
+      .command-grid {
+        display: grid;
+        grid-template-columns: minmax(0, 1.35fr) minmax(280px, 0.65fr);
+        gap: 18px;
+        align-items: start;
+      }
+
+      .recommendation-board,
+      .activity-board {
+        background: #fff;
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 18px;
+      }
+
+      .board-head {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 14px;
+        margin-bottom: 14px;
+      }
+
+      .board-head h3 {
+        margin: 0;
+      }
+
+      .board-head p {
+        margin: 4px 0 0;
+        color: var(--muted);
+      }
+
+      .live-tag {
+        display: inline-flex;
+        align-items: center;
+        gap: 8px;
+        padding: 6px 10px;
+        border-radius: 999px;
+        background: #eaf7f1;
+        color: var(--green);
+        font-weight: 800;
+        font-size: 0.78rem;
+      }
+
+      .live-tag::before {
+        content: "";
+        width: 8px;
+        height: 8px;
+        border-radius: 50%;
+        background: var(--green);
+      }
+
+      .activity-list {
+        display: grid;
+        gap: 10px;
+        max-height: 430px;
+        overflow: auto;
+        padding-right: 4px;
+      }
+
+      .activity-item {
+        border: 1px solid var(--line);
+        border-radius: 8px;
+        padding: 12px;
+        background: #fbfdff;
+      }
+
+      .activity-item strong {
+        display: block;
+        margin-bottom: 4px;
+      }
+
+      .activity-item span {
+        color: var(--muted);
+        font-size: 0.84rem;
+      }
+
+      .score {
+        display: inline-block;
+        min-width: 54px;
+        padding: 4px 8px;
+        border-radius: 999px;
+        color: #fff;
+        text-align: center;
+        font-weight: 800;
+        font-size: 0.78rem;
+      }
+
       table {
         width: 100%;
         border-collapse: collapse;
@@ -500,6 +588,7 @@
         .topbar,
         .hero,
         .automation,
+        .command-grid,
         .workspace,
         .signal-layout {
           grid-template-columns: 1fr;
@@ -635,6 +724,49 @@
               </div>
             </div>
           </div>
+        </div>
+      </section>
+
+      <section class="section">
+        <h2>Market Command Center</h2>
+        <div class="command-grid">
+          <div class="recommendation-board">
+            <div class="board-head">
+              <div>
+                <h3>Current Recommendations</h3>
+                <p>Auto-scans a starter watchlist and ranks the clearest paper-trade ideas.</p>
+              </div>
+              <span class="live-tag" id="live-state">Live demo</span>
+            </div>
+            <div class="button-row" style="margin-bottom: 12px">
+              <button type="button" id="scan-watchlist">Scan Watchlist</button>
+              <button class="secondary" type="button" id="toggle-live">Pause Activity</button>
+            </div>
+            <div class="table-wrap">
+              <table>
+                <thead>
+                  <tr>
+                    <th>Symbol</th>
+                    <th>Action</th>
+                    <th>Votes</th>
+                    <th>Confidence</th>
+                    <th>Paper Price</th>
+                    <th>Why</th>
+                  </tr>
+                </thead>
+                <tbody id="recommendations"></tbody>
+              </table>
+            </div>
+          </div>
+          <aside class="activity-board">
+            <div class="board-head">
+              <div>
+                <h3>System Activity</h3>
+                <p>Recent scans, signal changes, and paper-trade prompts.</p>
+              </div>
+            </div>
+            <div class="activity-list" id="activity-list"></div>
+          </aside>
         </div>
       </section>
 

@@ -17,7 +17,13 @@ const models = [
 const state = {
   signal: null,
   log: JSON.parse(localStorage.getItem("oglePaperLog") || "[]"),
+  recommendations: [],
+  activity: [],
+  live: true,
+  liveTimer: null,
 };
+
+const watchlist = ["BTC-USD", "ETH-USD", "SPY", "QQQ", "AAPL", "NVDA", "MSFT", "TSLA"];
 
 const $ = (id) => document.getElementById(id);
 
@@ -36,7 +42,14 @@ function runScan() {
   const symbol = $("symbol").value.trim().toUpperCase() || "BTC-USD";
   const threshold = Number($("threshold").value);
   const account = Math.max(Number($("account").value) || 1000, 100);
-  const seed = hashSymbol(symbol) + threshold * 17 + new Date().getMinutes();
+  state.signal = createSignal(symbol, threshold, account);
+
+  renderSignal();
+  addActivity(`${state.signal.action.toUpperCase()} scan ready`, `${symbol} produced ${state.signal.buyVotes} buy / ${state.signal.sellVotes} sell votes at ${state.signal.confidence}% confidence.`);
+}
+
+function createSignal(symbol, threshold, account, offset = 0) {
+  const seed = hashSymbol(symbol) + threshold * 17 + new Date().getMinutes() + offset;
   const votes = models.map((name, index) => ({ name, vote: modelVote(seed, index) }));
   const buyVotes = votes.filter((item) => item.vote === "buy").length;
   const sellVotes = votes.filter((item) => item.vote === "sell").length;
@@ -47,7 +60,7 @@ function runScan() {
   const price = Math.round((50 + (seed % 900) + Math.abs(Math.sin(seed)) * 73) * 100) / 100;
   const size = action === "hold" ? 0 : Math.round(account * Math.min(confidence / 100, 0.72) * 0.08);
 
-  state.signal = {
+  return {
     time: new Date().toLocaleString(),
     symbol,
     action,
@@ -58,9 +71,14 @@ function runScan() {
     price,
     size,
     votes,
+    reason: explainSignal(action, buyVotes, sellVotes, holdVotes),
   };
+}
 
-  renderSignal();
+function explainSignal(action, buyVotes, sellVotes, holdVotes) {
+  if (action === "buy") return `${buyVotes} models favor upside momentum or trend strength.`;
+  if (action === "sell") return `${sellVotes} models flag downside pressure or elevated risk.`;
+  return `${holdVotes} hold votes mean the bot is waiting for cleaner agreement.`;
 }
 
 function renderSignal() {
@@ -109,6 +127,7 @@ function logTrade() {
   state.log = state.log.slice(0, 50);
   localStorage.setItem("oglePaperLog", JSON.stringify(state.log));
   renderLog();
+  addActivity("Paper trade logged", `${state.signal.symbol} ${state.signal.action.toUpperCase()} was added to the browser-side paper log.`);
 }
 
 function renderLog() {
@@ -156,6 +175,78 @@ function exportLog() {
   URL.revokeObjectURL(url);
 }
 
+function scanWatchlist() {
+  const threshold = Number($("threshold").value);
+  const account = Math.max(Number($("account").value) || 1000, 100);
+  state.recommendations = watchlist
+    .map((symbol, index) => createSignal(symbol, threshold, account, index * 11))
+    .sort((a, b) => {
+      const actionWeight = { buy: 2, sell: 1, hold: 0 };
+      return actionWeight[b.action] - actionWeight[a.action] || b.confidence - a.confidence;
+    });
+  renderRecommendations();
+  const leader = state.recommendations[0];
+  addActivity("Watchlist scan complete", `Top paper idea: ${leader.symbol} ${leader.action.toUpperCase()} at ${leader.confidence}% confidence.`);
+}
+
+function renderRecommendations() {
+  $("recommendations").innerHTML = state.recommendations
+    .map(
+      (item) => `
+        <tr>
+          <td><strong>${item.symbol}</strong></td>
+          <td><span class="score ${item.action}">${item.action.toUpperCase()}</span></td>
+          <td>${item.buyVotes} buy / ${item.sellVotes} sell / ${item.holdVotes} hold</td>
+          <td>${item.confidence}%</td>
+          <td>$${Number(item.price).toLocaleString()}</td>
+          <td>${item.reason}</td>
+        </tr>
+      `,
+    )
+    .join("");
+}
+
+function addActivity(title, detail) {
+  state.activity.unshift({
+    title,
+    detail,
+    time: new Date().toLocaleTimeString([], { hour: "2-digit", minute: "2-digit", second: "2-digit" }),
+  });
+  state.activity = state.activity.slice(0, 12);
+  renderActivity();
+}
+
+function renderActivity() {
+  $("activity-list").innerHTML = state.activity
+    .map(
+      (item) => `
+        <div class="activity-item">
+          <strong>${item.title}</strong>
+          <span>${item.time} - ${item.detail}</span>
+        </div>
+      `,
+    )
+    .join("");
+}
+
+function toggleLive() {
+  state.live = !state.live;
+  $("toggle-live").textContent = state.live ? "Pause Activity" : "Resume Activity";
+  $("live-state").textContent = state.live ? "Live demo" : "Paused";
+  if (state.live) {
+    addActivity("Activity resumed", "The dashboard will continue refreshing watchlist paper signals.");
+  } else {
+    addActivity("Activity paused", "Auto-refresh is paused. Manual scans still work.");
+  }
+}
+
+function startLiveLoop() {
+  state.liveTimer = window.setInterval(() => {
+    if (!state.live) return;
+    scanWatchlist();
+  }, 15000);
+}
+
 $("scan-form").addEventListener("submit", (event) => {
   event.preventDefault();
   runScan();
@@ -170,11 +261,16 @@ $("reset-demo").addEventListener("click", () => {
 
 $("log-trade").addEventListener("click", logTrade);
 $("export-log").addEventListener("click", exportLog);
+$("scan-watchlist").addEventListener("click", scanWatchlist);
+$("toggle-live").addEventListener("click", toggleLive);
 $("clear-log").addEventListener("click", () => {
   state.log = [];
   localStorage.removeItem("oglePaperLog");
   renderLog();
+  addActivity("Paper log cleared", "Browser-side paper trade history was reset.");
 });
 
 runScan();
+scanWatchlist();
 renderLog();
+startLiveLoop();
